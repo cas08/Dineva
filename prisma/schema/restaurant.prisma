@@ -1,0 +1,49 @@
+model City {
+    id        Int       @id @default(autoincrement())
+    cityName  String    @unique @map("city_name") @db.VarChar(100)
+    addresses Address[]
+
+    @@map("cities")
+}
+
+model Address {
+    id             Int         @id @default(autoincrement())
+    cityId         Int         @map("city_id")
+    streetName     String      @map("street_name") @db.VarChar(150)
+    buildingNumber String      @map("building_number") @db.VarChar(20)
+    city           City        @relation(fields: [cityId], references: [id], onDelete: NoAction)
+    restaurant     Restaurant?
+
+    @@index([cityId])
+    @@map("addresses")
+}
+
+model Restaurant {
+    id        Int     @id @default(autoincrement())
+    addressId Int     @unique @map("address_id")
+    address   Address @relation(fields: [addressId], references: [id], onDelete: NoAction)
+    tables    Table[]
+
+    @@index([addressId])
+    @@map("restaurants")
+}
+
+model Table {
+    id           Int           @id @default(autoincrement())
+    tableNumber  Int           @map("table_number")
+    restaurantId Int           @map("restaurant_id")
+    capacity     Int
+    status       TableStatus   @default(free)
+    reservations Reservation[]
+    restaurants  Restaurant    @relation(fields: [restaurantId], references: [id], onUpdate: NoAction)
+
+    @@unique([restaurantId, tableNumber])
+    @@index([restaurantId])
+    @@map("tables")
+}
+
+enum TableStatus {
+    free // Вільний
+    reserved // Заброньований
+    occupied // Зайнятий
+}

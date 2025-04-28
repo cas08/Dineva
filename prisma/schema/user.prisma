@@ -1,0 +1,56 @@
+model User {
+  id          String   @id @default(cuid())
+  name        String   @map("first_name") @db.VarChar(50)
+  surname     String?  @map("last_name") @db.VarChar(50)
+  email       String   @unique @db.VarChar(150)
+  password    String?  @db.VarChar(255)
+  userRole    UserRole @default(User) @map("user_role")
+  phoneNumber String?  @map("phone_number") @db.VarChar(13)
+
+  reviews               Review[]
+  createdAt             DateTime      @default(now()) @map("created_at")
+  accounts              Account[]
+  sessions              Session[]
+  reservations          Reservation[]
+  completedReservations Reservation[] @relation("CompletedReservations")
+  cancelledReservations Reservation[] @relation("CancelledReservations")
+
+  @@index([email])
+  @@map("users")
+}
+
+enum UserRole {
+  Admin
+  Manager
+  User
+}
+
+model Account {
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @unique @map("provider_account_id")
+  access_token      String? @db.Text
+  refresh_token     String? @db.Text
+  expires_at        Int?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("sessions")
+}

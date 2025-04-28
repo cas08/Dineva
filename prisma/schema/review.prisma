@@ -1,0 +1,13 @@
+model Review {
+    id            Int       @id @default(autoincrement())
+    userId        String    @map("user_id")
+    rating        Int
+    comment       String?
+    createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+    editedAt      DateTime? @map("edited_at") @db.Timestamp(6)
+    lastUpdatedAt DateTime  @map("last_updated")
+    users         User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@index([userId])
+    @@map("reviews")
+}

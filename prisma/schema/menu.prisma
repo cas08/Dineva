@@ -1,0 +1,20 @@
+model MenuItem {
+    id          Int      @id @default(autoincrement())
+    name        String   @db.VarChar(50)
+    description String?
+    price       Decimal  @db.Decimal(10, 2)
+    categoryId  Int      @map("category_id")
+    category    Category @relation(fields: [categoryId], references: [id])
+    photoUrl    String?  @map("photo_url") @db.VarChar(255)
+
+    @@index([categoryId])
+    @@map("menu_items")
+}
+
+model Category {
+    id        Int        @id @default(autoincrement())
+    name      String     @unique @db.VarChar(50)
+    menuItems MenuItem[]
+
+    @@map("categories")
+}

@@ -1,0 +1,50 @@
+model Reservation {
+  id              Int                @id @default(autoincrement())
+  tableId         Int                @map("table_id")
+  customerName    String             @map("customer_name") @db.VarChar(50)
+  customerSurname String             @map("customer_surname") @db.VarChar(50)
+  customerPhone   String             @map("customer_phone") @db.VarChar(12)
+  email           String?            @db.VarChar(150)
+  date            String             @db.VarChar(10)
+  startTime       String             @map("start_time") @db.VarChar(5)
+  endTime         String             @map("end_time") @db.VarChar(5)
+  peopleCount     Int                @map("people_count")
+  status          ReservationStatus  @default(active)
+  createdBy       ReservationCreator @default(User) @map("created_by")
+  userId          String?            @map("user_id")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  completedAt     DateTime? @map("completed_at")
+  completedById   String?   @map("completed_by_id")
+  completedByRole UserRole? @map("completed_by_role")
+
+  cancelledAt     DateTime? @map("cancelled_at")
+  cancelledById   String?   @map("cancelled_by_id")
+  cancelledByRole UserRole? @map("cancelled_by_role")
+
+  table           Table   @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  user            User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  completedByUser User?   @relation("CompletedReservations", fields: [completedById], references: [id])
+  cancelledByUser User?   @relation("CancelledReservations", fields: [cancelledById], references: [id])
+  isAutoCompleted Boolean @default(false) @map("is_auto_completed")
+
+  @@index([tableId])
+  @@index([userId])
+  @@index([date])
+  @@index([completedById])
+  @@index([cancelledById])
+  @@map("reservations")
+}
+
+enum ReservationStatus {
+  active
+  completed
+  cancelled
+}
+
+enum ReservationCreator {
+  Admin
+  Manager
+  User
+  Guest
+}

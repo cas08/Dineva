@@ -1,0 +1,11 @@
+export { CategoriesApi } from "./all/category-service";
+export { MenuItemsApi } from "./all/menu-items-service";
+export { PhotosApi } from "./all/photos-service";
+export { AuthApi } from "./all/auth-service";
+export { ReviewsApi } from "./all/review-service";
+export { AddressesApi } from "./all/addresses-service";
+export { CitiesApi } from "./all/cities-service";
+export { RestaurantsApi } from "./all/restaurants-service";
+export { TablesApi } from "./all/tables-service";
+export { ReservationsApi } from "./all/reservation-service";
+export { UsersApi } from "./all/user-service";
