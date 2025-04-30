@@ -321,16 +321,31 @@ export default function ReservationsManagementPage() {
         <Box
           sx={{
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: { xs: "flex-start", sm: "center" },
+            gap: 1,
             mb: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
+              width: { xs: "100%", sm: "auto" },
+            }}
+          >
             <Tabs
               value={activeTab}
               onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
               sx={{
+                maxWidth: "100%",
+                flexShrink: 1,
                 ".MuiTab-root.Mui-selected": {
                   color: "var(--primary)",
                 },
@@ -374,6 +389,10 @@ export default function ReservationsManagementPage() {
               />
             }
             label="Показати минулі бронювання"
+            sx={{
+              margin: 0,
+              width: { xs: "100%", sm: "auto" },
+            }}
           />
         </Box>
         <MaterialReactTable
@@ -445,7 +464,11 @@ export default function ReservationsManagementPage() {
             of: "з",
           }}
           muiTableContainerProps={{
-            sx: { minHeight: "500px", maxHeight: "700px" },
+            sx: {
+              minHeight: "500px",
+              maxHeight: "700px",
+              overflowX: "auto",
+            },
           }}
           muiToolbarAlertBannerProps={{
             color: "info",
