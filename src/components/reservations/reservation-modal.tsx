@@ -220,7 +220,7 @@ export const ReservationModal = ({
           </Typography>
 
           <Box mt={2}>
-            <Grid container spacing={2}>
+            <Grid container>
               <Grid size={12}>
                 <MyTextField
                   name="customerName"

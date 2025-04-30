@@ -63,8 +63,8 @@ export default function HomePage() {
               className="mySwiper"
               style={
                 {
-                  "--swiper-pagination-color": "var(--primary)",
-                  "--swiper-navigation-color": "var(--primary)",
+                  "--swiper-pagination-color": "var(--background)",
+                  "--swiper-navigation-color": "var(--background)",
                   borderRadius: "16px",
                   overflow: "hidden",
                 } as CSSProperties & Record<string, string>
@@ -108,18 +108,22 @@ export default function HomePage() {
                     <Box
                       sx={{
                         position: "absolute",
-                        bottom: { xs: 20, md: 50 },
-                        left: { xs: 20, md: 50 },
-                        maxWidth: { xs: "80%", md: "60%" },
+                        bottom: { xs: 16, md: 50 },
+                        left: { xs: 16, md: 50 },
+                        right: { xs: 16, md: "auto" },
                         zIndex: 2,
                         color: "var(--background)",
+                        textShadow: "0 1px 2px rgba(0,0,0,0.8)",
                       }}
                     >
                       <Typography
-                        variant="h3"
+                        variant="h4"
                         component="h2"
                         gutterBottom
-                        sx={{ fontWeight: "bold" }}
+                        sx={{
+                          fontWeight: "bold",
+                          fontSize: { xs: "1.5rem", md: "2.5rem" },
+                        }}
                       >
                         {promo.title}
                       </Typography>
@@ -265,7 +269,7 @@ export default function HomePage() {
                 </Typography>
                 <MyButton
                   component={Link}
-                  href="/reviews/new"
+                  href="/reviews"
                   size="large"
                   endIcon={<ArrowForward />}
                 >

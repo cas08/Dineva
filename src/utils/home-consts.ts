@@ -2,7 +2,7 @@ import { menuItemData } from "@/../prisma/constants";
 export const promotions = [
   {
     id: 1,
-    title: "Знижка -30% на бронювання столиків у будні",
+    title: "-30% у будні дні",
     description:
       "Забронюйте столик з понеділка по четвер і отримайте знижку 30% на все меню",
     image: "/promotion-1.jpg",
