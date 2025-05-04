@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma-client";
 import { z } from "zod";
 import { ContactInfoDbSchema } from "@/zod-schemas";
 import { getErrorMessage } from "@/utils/error-utils";
+import { formatDateToDDMMYYYY } from "@/utils/date-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
 
     const formattedReservations = reservations.map((reservation) => ({
       id: reservation.id,
-      date: reservation.date,
+      date: formatDateToDDMMYYYY(reservation.date),
       startTime: reservation.startTime,
       endTime: reservation.endTime,
       status: reservation.status,
@@ -60,12 +61,7 @@ export async function GET(req: NextRequest) {
       userId: reservation.userId,
     }));
 
-    return NextResponse.json(
-      formattedReservations.map((res) => {
-        const { ...resWithoutJsDate } = res;
-        return resWithoutJsDate;
-      }),
-    );
+    return NextResponse.json(formattedReservations);
   } catch (error) {
     console.error("Get user reservations error:", error);
     return NextResponse.json(
@@ -132,7 +128,7 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const validatedData = ContactInfoDbSchema.parse(body);
 
-    await prisma.reservation.update({
+    const updatedReservation = await prisma.reservation.update({
       where: { id: reservationId },
       data: {
         customerName: validatedData.customerName,
@@ -144,6 +140,10 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Контактну інформацію успішно оновлено",
+      reservation: {
+        ...updatedReservation,
+        date: formatDateToDDMMYYYY(updatedReservation.date),
+      },
     });
   } catch (error) {
     console.error("Update reservation contact info error:", error);

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma-client";
 import { checkAdminOrManager } from "@/utils/check-admin-manager";
+import { formatDateToDDMMYYYY } from "@/utils/date-utils";
+import type { ReservationStatus } from "@/@types";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,11 +20,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const where = {
+      userId: userId,
+      ...(showPast ? {} : { status: "active" as ReservationStatus }),
+    };
+
     const reservations = await prisma.reservation.findMany({
-      where: {
-        userId: userId,
-        ...(showPast ? {} : { status: "active" }),
-      },
+      where,
       include: {
         table: {
           include: {
@@ -45,7 +49,7 @@ export async function GET(req: NextRequest) {
 
     const formattedReservations = reservations.map((reservation) => ({
       id: reservation.id,
-      date: reservation.date,
+      date: formatDateToDDMMYYYY(reservation.date),
       startTime: reservation.startTime,
       endTime: reservation.endTime,
       status: reservation.status,

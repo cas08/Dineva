@@ -7,22 +7,24 @@ import {
   RESTAURANT_CLOSE_HOUR,
 } from "@/utils/reservation-utils";
 import type { TimeSlotAvailability } from "@/@types";
-import { timeToMinutes } from "@/utils/date-utils";
+import { parseDateString, timeToMinutes } from "@/utils/date-utils";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const restaurantId = searchParams.get("restaurantId");
-    const date = searchParams.get("date");
+    const dateString = searchParams.get("date");
     const peopleCount = searchParams.get("peopleCount");
     const duration = searchParams.get("duration");
 
-    if (!restaurantId || !date || !peopleCount || !duration) {
+    if (!restaurantId || !dateString || !peopleCount || !duration) {
       return NextResponse.json(
         { error: "Missing required parameters" },
         { status: 400 },
       );
     }
+
+    const date = parseDateString(dateString);
 
     const tables = await db.table.findMany({
       where: {

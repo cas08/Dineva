@@ -13,8 +13,15 @@ export const formatDateToDDMMYYYY = (date: Date | null): string => {
 // Парсинг "дд.мм.рррр" в об'єкт Date
 export const parseDateString = (dateStr: string): Date => {
   if (!dateStr) return new Date();
-  const [day, month, year] = dateStr.split(".").map(Number);
-  return new Date(year, month - 1, day);
+
+  if (dateStr.includes(".")) {
+    const [day, month, year] = dateStr.split(".").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    date.setUTCHours(0, 0, 0, 0);
+    return date;
+  }
+
+  return new Date(dateStr);
 };
 
 // Перетворення часу в форматі "гг:хх" в кількість хвилин

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma-client";
 import { checkAdminOrManager } from "@/utils/check-admin-manager";
 import { Prisma, ReservationStatus } from "@prisma/client";
+import { formatDateToDDMMYYYY, parseDateString } from "@/utils/date-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,8 +12,8 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const showPast = url.searchParams.get("showPast") === "true";
     const status = url.searchParams.get("status");
-    const dateFrom = url.searchParams.get("dateFrom");
-    const dateTo = url.searchParams.get("dateTo");
+    const dateFromParam = url.searchParams.get("dateFrom");
+    const dateToParam = url.searchParams.get("dateTo");
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "50");
 
@@ -23,20 +24,22 @@ export async function GET(req: NextRequest) {
     }
 
     if (!showPast) {
-      const today = new Date()
-        .toISOString()
-        .split("T")[0]
-        .split("-")
-        .reverse()
-        .join(".");
-      where.date = { gte: today };
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      where.date = {
+        gte: today,
+      };
     }
 
-    if (dateFrom || dateTo) {
+    if (dateFromParam || dateToParam) {
+      const dateFrom = dateFromParam
+        ? parseDateString(dateFromParam)
+        : undefined;
+      const dateTo = dateToParam ? parseDateString(dateToParam) : undefined;
+
       where.date = {
-        ...(typeof where.date === "object" && where.date !== null
-          ? where.date
-          : {}),
+        ...((where.date as Date) || {}),
         ...(dateFrom ? { gte: dateFrom } : {}),
         ...(dateTo ? { lte: dateTo } : {}),
       };
@@ -86,7 +89,7 @@ export async function GET(req: NextRequest) {
 
     const formattedReservations = reservations.map((reservation) => ({
       id: reservation.id,
-      date: reservation.date,
+      date: formatDateToDDMMYYYY(reservation.date),
       startTime: reservation.startTime,
       endTime: reservation.endTime,
       status: reservation.status,

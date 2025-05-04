@@ -4,6 +4,7 @@ import { checkAdminOrManager } from "@/utils/check-admin-manager";
 import { auth } from "@/lib/auth-options";
 import { UserRole } from "@/@types";
 import { Prisma } from "@prisma/client";
+import { formatDateToDDMMYYYY, parseDateString } from "@/utils/date-utils";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -18,8 +19,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const date = parseDateString(dateParam);
+
     const whereCondition: Prisma.ReservationWhereInput = {
-      date: dateParam,
+      date,
       table: {
         restaurantId: parseInt(restaurantId, 10),
       },
@@ -51,7 +54,12 @@ export async function GET(req: NextRequest) {
       },
       orderBy: [{ tableId: "asc" }, { startTime: "asc" }],
     });
-    return NextResponse.json(reservations);
+    const formattedReservations = reservations.map((reservation) => ({
+      ...reservation,
+      date: formatDateToDDMMYYYY(reservation.date),
+    }));
+
+    return NextResponse.json(formattedReservations);
   } catch (error) {
     console.error("Помилка отримання резервацій:", error);
     return NextResponse.json(

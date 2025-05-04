@@ -10,11 +10,13 @@ export type TimeSlotAvailability = {
 };
 
 export type UserReservation = Reservation & {
+  date: string;
   tableNumber: number;
   restaurantAddress: string;
 };
 
 export type ReservationWithTable = Reservation & {
+  date: string;
   table: {
     tableNumber: string;
     capacity: number;
@@ -40,7 +42,10 @@ export type CreateReservation = Omit<
   | "cancelledById"
   | "cancelledByRole"
   | "isAutoCompleted"
->;
+  | "date"
+> & {
+  date: string;
+};
 
 export type ReservationModal = {
   id: number;
@@ -59,19 +64,18 @@ export type TimeSlot = {
   availableTables: number[];
 };
 
-export type ReservationPayload = Pick<
-  Reservation,
-  | "tableId"
-  | "customerName"
-  | "customerSurname"
-  | "customerPhone"
-  | "date"
-  | "startTime"
-  | "endTime"
-  | "peopleCount"
-  | "userId"
-  | "email"
->;
+export type ReservationPayload = {
+  tableId: number;
+  customerName: string;
+  customerSurname: string;
+  customerPhone: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  peopleCount: number;
+  userId: string | null;
+  email: string | null;
+};
 
 export type ReservationsResponse = {
   reservations: UserReservation[];

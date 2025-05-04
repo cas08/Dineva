@@ -3,19 +3,22 @@ import db from "@/lib/prisma-client";
 import { ReservationSchema } from "@/zod-schemas";
 import { auth } from "@/lib/auth-options";
 import type { ReservationCreator, UserRole } from "@/@types";
+import { formatDateToDDMMYYYY, parseDateString } from "@/utils/date-utils";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const restaurantId = searchParams.get("restaurantId");
-    const date = searchParams.get("date");
+    const dateParam = searchParams.get("date");
 
-    if (!restaurantId || !date) {
+    if (!restaurantId || !dateParam) {
       return NextResponse.json(
         { error: "ID ресторану та дата є обов'язковими" },
         { status: 400 },
       );
     }
+
+    const date = parseDateString(dateParam);
 
     const reservations = await db.reservation.findMany({
       where: {
@@ -36,7 +39,12 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(reservations);
+    const formattedReservations = reservations.map((reservation) => ({
+      ...reservation,
+      date: formatDateToDDMMYYYY(reservation.date),
+    }));
+
+    return NextResponse.json(formattedReservations);
   } catch (error) {
     console.error("Помилка отримання резервацій:", error);
     return NextResponse.json(
@@ -59,12 +67,14 @@ export async function POST(req: NextRequest) {
       userId: userId,
     };
 
-    const data = ReservationSchema.parse(normalizedData);
+    const validatedData = ReservationSchema.parse(normalizedData);
+
+    const date = parseDateString(validatedData.date);
 
     const existing = await db.reservation.findMany({
       where: {
-        tableId: data.tableId,
-        date: data.date,
+        tableId: validatedData.tableId,
+        date,
         status: "active",
       },
       select: { startTime: true, endTime: true },
@@ -72,9 +82,12 @@ export async function POST(req: NextRequest) {
 
     const isConflict = existing.some((r) => {
       return (
-        (data.startTime >= r.startTime && data.startTime < r.endTime) ||
-        (data.endTime > r.startTime && data.endTime <= r.endTime) ||
-        (data.startTime <= r.startTime && data.endTime >= r.endTime)
+        (validatedData.startTime >= r.startTime &&
+          validatedData.startTime < r.endTime) ||
+        (validatedData.endTime > r.startTime &&
+          validatedData.endTime <= r.endTime) ||
+        (validatedData.startTime <= r.startTime &&
+          validatedData.endTime >= r.endTime)
       );
     });
 
@@ -93,22 +106,27 @@ export async function POST(req: NextRequest) {
 
     const reservation = await db.reservation.create({
       data: {
-        tableId: data.tableId,
-        customerName: data.customerName,
-        customerSurname: data.customerSurname,
-        customerPhone: data.customerPhone,
-        email: data.email,
-        date: data.date,
-        startTime: data.startTime,
-        endTime: data.endTime,
+        tableId: validatedData.tableId,
+        customerName: validatedData.customerName,
+        customerSurname: validatedData.customerSurname,
+        customerPhone: validatedData.customerPhone,
+        email: validatedData.email,
+        date,
+        startTime: validatedData.startTime,
+        endTime: validatedData.endTime,
         userId: userId,
-        peopleCount: data.peopleCount,
+        peopleCount: validatedData.peopleCount,
         status: "active",
         createdBy: createdBy as ReservationCreator,
       },
     });
 
-    return NextResponse.json(reservation);
+    const formattedReservation = {
+      ...reservation,
+      date: formatDateToDDMMYYYY(reservation.date),
+    };
+
+    return NextResponse.json(formattedReservation);
   } catch (error) {
     console.error("Помилка створення резервації:", error);
     return NextResponse.json(
@@ -171,7 +189,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    await db.reservation.update({
+    const updatedReservation = await db.reservation.update({
       where: { id: reservationId },
       data: {
         status: "cancelled",
@@ -184,6 +202,10 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Резервацію успішно скасовано",
+      reservation: {
+        ...updatedReservation,
+        date: formatDateToDDMMYYYY(updatedReservation.date),
+      },
     });
   } catch (error) {
     console.error("Помилка скасування резервації:", error);

@@ -29,6 +29,7 @@ export type {
   User,
   UserRole,
   ReservationCreator,
+  ReservationStatus,
 } from "@prisma/client";
 export type { SignUpFormData, SignInFormData } from "./all/auth";
 export type {

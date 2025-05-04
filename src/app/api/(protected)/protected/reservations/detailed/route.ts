@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma-client";
 import { checkAdminOrManager } from "@/utils/check-admin-manager";
+import { formatDateToDDMMYYYY } from "@/utils/date-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest) {
 
     const formattedReservation = {
       id: reservation.id,
-      date: reservation.date,
+      date: formatDateToDDMMYYYY(reservation.date),
       startTime: reservation.startTime,
       endTime: reservation.endTime,
       status: reservation.status,

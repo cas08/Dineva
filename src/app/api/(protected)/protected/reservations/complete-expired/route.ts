@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/prisma-client";
-import { format } from "date-fns";
+import { startOfDay } from "date-fns";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
     }
 
     const currentDate = new Date();
-    const currentTime = currentDate.toTimeString().slice(0, 5); // HH:MM
-    const formattedDateForDb = format(currentDate, "dd.MM.yyyy");
+    const currentTime = currentDate.toTimeString().slice(0, 5);
+    const currentDay = startOfDay(currentDate);
 
     const expiredReservations = await db.reservation.findMany({
       where: {
@@ -26,11 +26,11 @@ export async function POST(req: NextRequest) {
         OR: [
           {
             date: {
-              lt: formattedDateForDb,
+              lt: currentDay,
             },
           },
           {
-            date: formattedDateForDb,
+            date: currentDay,
             endTime: {
               lte: currentTime,
             },

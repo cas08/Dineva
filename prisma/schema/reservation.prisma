@@ -5,7 +5,7 @@ model Reservation {
   customerSurname String             @map("customer_surname") @db.VarChar(50)
   customerPhone   String             @map("customer_phone") @db.VarChar(12)
   email           String?            @db.VarChar(150)
-  date            String             @db.VarChar(10)
+  date            DateTime           @db.Date
   startTime       String             @map("start_time") @db.VarChar(5)
   endTime         String             @map("end_time") @db.VarChar(5)
   peopleCount     Int                @map("people_count")
