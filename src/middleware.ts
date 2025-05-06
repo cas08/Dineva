@@ -100,8 +100,7 @@ export async function middleware(req: NextRequest) {
 
     if (
       (pathname.startsWith("/profile") ||
-        pathname === "/reservations/by-user" ||
-        pathname.startsWith("/reviews")) &&
+        pathname === "/reservations/by-user") &&
       !isAuth
     ) {
       return NextResponse.redirect(new URL("/sign-in", req.url));
