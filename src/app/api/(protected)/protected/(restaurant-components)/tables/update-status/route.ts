@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/prisma-client";
+import { format } from "date-fns";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,25 +14,45 @@ export async function POST(req: NextRequest) {
     }
 
     const currentDate = new Date();
-    const currentTime = currentDate.toTimeString().slice(0, 5);
+    const currentTime = format(currentDate, "HH:mm");
 
-    const activeReservations = await db.reservation.findMany({
+    const allTodayReservations = await db.reservation.findMany({
       where: {
-        date: currentDate,
         status: "active",
-        startTime: {
-          lte: currentTime,
-        },
-        endTime: {
-          gt: currentTime,
-        },
       },
       select: {
         id: true,
         tableId: true,
+        date: true,
         startTime: true,
         endTime: true,
+        table: {
+          select: {
+            restaurantId: true,
+          },
+        },
       },
+    });
+
+    const activeReservations = allTodayReservations.filter((res) => {
+      if (res.table.restaurantId !== restaurantId) {
+        return false;
+      }
+
+      let reservationDate;
+      if (typeof res.date === "string") {
+        reservationDate = res.date;
+      } else {
+        reservationDate = format(new Date(res.date), "yyyy-MM-dd");
+      }
+
+      const currentDateStr = format(currentDate, "yyyy-MM-dd");
+
+      if (reservationDate !== currentDateStr) {
+        return false;
+      }
+
+      return res.startTime <= currentTime && res.endTime > currentTime;
     });
 
     const tables = await db.table.findMany({

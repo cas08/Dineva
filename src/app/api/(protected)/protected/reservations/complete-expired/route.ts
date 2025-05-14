@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/prisma-client";
 import { startOfDay } from "date-fns";
+import { timeToMinutes } from "@/utils/date-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,29 +15,47 @@ export async function POST(req: NextRequest) {
     }
 
     const currentDate = new Date();
-    const currentTime = currentDate.toTimeString().slice(0, 5);
     const currentDay = startOfDay(currentDate);
 
-    const expiredReservations = await db.reservation.findMany({
+    const currentHours = currentDate.getHours();
+    const currentMinutes = currentDate.getMinutes();
+    const currentTimeInMinutes = currentHours * 60 + currentMinutes;
+
+    const activeReservations = await db.reservation.findMany({
       where: {
         status: "active",
         table: {
           restaurantId,
         },
-        OR: [
-          {
-            date: {
-              lt: currentDay,
-            },
-          },
-          {
-            date: currentDay,
-            endTime: {
-              lte: currentTime,
-            },
-          },
-        ],
       },
+      include: {
+        table: true,
+      },
+    });
+
+    console.log(`Знайдено активних резервацій: ${activeReservations.length}`);
+
+    const expiredReservations = activeReservations.filter((res) => {
+      const reservationDate = new Date(res.date);
+      if (reservationDate < currentDay) {
+        console.log(`Резервація ${res.id}: минула дата (${res.date})`);
+        return true;
+      }
+
+      const resDateStr = reservationDate.toISOString().split("T")[0];
+      const currDateStr = currentDate.toISOString().split("T")[0];
+
+      if (resDateStr === currDateStr) {
+        if (!res.endTime) {
+          console.log(`Резервація ${res.id}: відсутній час закінчення`);
+          return false;
+        }
+
+        const endTimeInMinutes = timeToMinutes(res.endTime);
+        return endTimeInMinutes <= currentTimeInMinutes;
+      }
+
+      return false;
     });
 
     const completedReservationIds = expiredReservations.map((r) => r.id);
@@ -54,6 +73,8 @@ export async function POST(req: NextRequest) {
           isAutoCompleted: true,
         },
       });
+    } else {
+      console.log("Немає резервацій для завершення");
     }
 
     return NextResponse.json({
