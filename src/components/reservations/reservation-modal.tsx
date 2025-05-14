@@ -117,13 +117,11 @@ export const ReservationModal = ({
       let phone = "+380";
 
       if (session.user.name) {
-        const nameParts = session.user.name.split(" ");
-        if (nameParts.length >= 2) {
-          firstName = nameParts[0] || "";
-          lastName = nameParts.slice(1).join(" ") || "";
-        } else if (nameParts.length === 1) {
-          firstName = nameParts[0] || "";
-        }
+        firstName = session.user.name;
+      }
+
+      if (session.user.surname) {
+        lastName = session.user.surname;
       }
 
       if (session.user.phoneNumber) {
